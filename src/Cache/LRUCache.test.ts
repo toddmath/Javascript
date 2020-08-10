@@ -35,11 +35,9 @@ describe('LRUCache', () => {
 			}
 
 			const result = fib(num - 1, cache) + fib(num - 2, cache)
-
 			if (cache) {
 				cache.set(num, result)
 			}
-
 			return result
 		}
 
