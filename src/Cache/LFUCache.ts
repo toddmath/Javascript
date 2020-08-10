@@ -1,13 +1,15 @@
 type DBLKey = string | number | null
 type DBLVal = string | number | boolean | null
+type NonNullKeyDBLLFU = NonNullable<DBLKey>
+type NonNullValDBLLFU = NonNullable<DBLVal>
 
 /** Double Linked List Node built specifically for LFU Cache */
-class DoubleLinkedListLFUNode<T = DBLVal> {
+class DoubleLinkedListLFUNode<K = DBLKey, V = DBLVal> {
 	freq: number
 	next: DoubleLinkedListLFUNode | null
 	prev: DoubleLinkedListLFUNode | null
 
-	constructor(public key: DBLKey, public val: T) {
+	constructor(public key: K, public val: V) {
 		this.key = key
 		this.val = val
 		this.freq = 0
@@ -18,8 +20,8 @@ class DoubleLinkedListLFUNode<T = DBLVal> {
 
 /** Double Linked List built specifically for LFU Cache */
 class DoubleLinkedListLFU {
-	head: DoubleLinkedListLFUNode | null
-	rear: DoubleLinkedListLFUNode | null
+	head: DoubleLinkedListLFUNode
+	rear: DoubleLinkedListLFUNode
 
 	constructor() {
 		this.head = new DoubleLinkedListLFUNode(null, null)
@@ -40,11 +42,9 @@ class DoubleLinkedListLFU {
 		}
 	}
 
-	add<T extends DBLVal = NonNullable<DBLVal>>(
-		node: DoubleLinkedListLFUNode<T>
-	) {
+	add(node: DoubleLinkedListLFUNode) {
 		// Adds the given node to the end of the list (before rear) and positions it based on frequency
-		const temp = this.rear!.prev!
+		const temp = this.rear.prev!
 		temp.next = node
 		node.prev = temp
 		this.rear!.prev = node
@@ -91,12 +91,27 @@ export class LFUCache {
 		this.cache = {}
 	}
 
+	get numHits() {
+		return this.hits
+	}
+
+	get numMiss() {
+		return this.miss
+	}
+
+	get size() {
+		return this.numKeys
+	}
+
 	cacheInfo() {
 		// Return the details for the cache instance [hits, misses, capacity, current_size]
 		return `CacheInfo(hits=${this.hits}, misses=${this.miss}, capacity=${this.capacity}, current size=${this.numKeys})`
 	}
 
-	set<T extends DBLVal = NonNullable<DBLVal>>(key: string | number, value: T) {
+	set<
+		K extends NonNullKeyDBLLFU = NonNullKeyDBLLFU,
+		V extends NonNullValDBLLFU = NonNullValDBLLFU
+	>(key: K, value: V) {
 		// Sets the value for the input key and updates the Double Linked List
 		if (!(key in this.cache)) {
 			if (this.numKeys >= this.capacity) {
@@ -119,7 +134,7 @@ export class LFUCache {
 		}
 	}
 
-	get(key: string | number) {
+	get<K extends NonNullKeyDBLLFU = NonNullKeyDBLLFU>(key: K) {
 		// Returns the value for the input key and updates the Double Linked List. Returns null if key is not present in cache
 		if (key in this.cache) {
 			this.hits += 1
@@ -133,62 +148,6 @@ export class LFUCache {
 	}
 }
 
-function isLFUCache<T extends LFUCache, U>(data: T | U): data is T {
+export function isLFUCache<T extends LFUCache, U>(data: T | U): data is T {
 	return typeof data !== 'undefined' && data instanceof LFUCache
 }
-
-function mainLFU() {
-	// Example 1 (Small Cache)
-	const cache = new LFUCache(2)
-	cache.set(1, 1)
-	cache.set(2, 2)
-
-	console.log(cache.get(1))
-
-	cache.set(3, 3)
-
-	console.log(cache.get(2)) // cache miss
-
-	cache.set(4, 4)
-
-	console.log(cache.get(1)) // cache miss
-	console.log(cache.get(3))
-	console.log(cache.get(4))
-
-	console.log('Example Cache: ', cache.cacheInfo(), '\n')
-
-	// Example 2 (Computing Fibonacci Series - 100 terms)
-	function fib(num: number, cache: LFUCache | null = null): number {
-		if (isLFUCache(cache)) {
-			const value = cache.get(num)
-			if (value && typeof value === 'number') {
-				return value
-			}
-		}
-
-		if (num === 1 || num === 2) {
-			return 1
-		}
-
-		const result = fib(num - 1, cache) + fib(num - 2, cache)
-
-		if (cache instanceof LFUCache) {
-			cache.set(num, result)
-		}
-
-		return result
-	}
-
-	const fibCache = new LFUCache(100)
-
-	Array.from({ length: 100 }, (_, i) => i).forEach((i) => {
-		fib(i, fibCache)
-	})
-
-	// for (let i = 1; i <= 100; i++) {
-	// 	fib(i, fibCache)
-	// }
-	console.log('Fibonacci Series Cache: ', fibCache.cacheInfo(), '\n')
-}
-
-mainLFU()

@@ -71,6 +71,18 @@ export class LRUCache {
 		this.cache = {}
 	}
 
+	get numHits() {
+		return this.hits
+	}
+
+	get numMiss() {
+		return this.miss
+	}
+
+	get size() {
+		return this.numKeys
+	}
+
 	/** Return the details for the cache instance [hits, misses, capacity, current_size] */
 	cacheInfo() {
 		return `CacheInfo(hits=${this.hits}, misses=${this.miss}, capacity=${this.capacity}, current size=${this.numKeys})`
@@ -119,53 +131,6 @@ export class LRUCache {
 	}
 }
 
-function mainLRU() {
-	// Example 1 (Small Cache)
-	const cache = new LRUCache(2)
-	cache.set(1, 1)
-	cache.set(2, 2)
-
-	console.log(cache.get(1))
-
-	cache.set(3, 3)
-
-	console.log(cache.get(2)) // cache miss
-
-	cache.set(4, 4)
-
-	console.log(cache.get(1)) // cache miss
-	console.log(cache.get(3))
-	console.log(cache.get(4))
-
-	console.log('Example Cache: ', cache.cacheInfo(), '\n')
-
-	// Example 2 (Computing Fibonacci Series - 100 terms)
-	function fib(num: number, cache: LRUCache | null = null): number {
-		if (cache !== null) {
-			const value = cache.get(num)
-			if (value && typeof value === 'number') {
-				return value
-			}
-		}
-
-		if (num === 1 || num === 2) {
-			return 1
-		}
-
-		const result = fib(num - 1, cache) + fib(num - 2, cache)
-
-		if (cache) {
-			cache.set(num, result)
-		}
-
-		return result
-	}
-
-	const fibCache = new LRUCache(100)
-	for (let i = 1; i <= 100; i++) {
-		fib(i, fibCache)
-	}
-	console.log('Fibonacci Series Cache: ', fibCache.cacheInfo(), '\n')
+export function isLRUCache<T extends LRUCache, U>(data: T | U): data is T {
+	return typeof data !== 'undefined' && data instanceof LRUCache
 }
-
-mainLRU()
