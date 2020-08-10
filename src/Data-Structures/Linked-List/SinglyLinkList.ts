@@ -1,9 +1,8 @@
-export class LinkedList {
+export class LinkedList<T extends unknown> {
 	private length: number
-	private head: Node | null
+	private head: Node<T> | null
 
 	constructor() {
-		// Length of linklist and head is null at start
 		this.length = 0
 		this.head = null
 	}
@@ -12,31 +11,27 @@ export class LinkedList {
 		return this.length
 	}
 
-	// Creates a node and adds it to linklist
-	add<T extends unknown>(element: T) {
+	add(element: T) {
 		const node = new Node<T>(element)
-		// Check if its the first element
 		if (this.head === null) {
 			this.head = node
 		} else {
 			let currentNode = this.head
 
-			// Loop till there is node present in the list
 			while (currentNode.next) {
 				currentNode = currentNode.next
 			}
 
-			// Adding node to the end of the list
 			currentNode.next = node
 		}
-		// Increment the length
+
 		this.length++
 	}
 
 	// Removes the node with the value as param
-	remove(element: unknown) {
+	remove(element: T) {
 		let currentNode = this.head
-		let previousNode: Node
+		let previousNode: Node<T>
 
 		// Check if the head node is the element to remove
 		if (currentNode && currentNode.element === element) {
@@ -62,7 +57,7 @@ export class LinkedList {
 	}
 
 	// Returns the index of the element passed as param otherwise -1
-	indexOf<T extends unknown>(element: T) {
+	indexOf(element: T) {
 		let currentNode = this.head
 		let index = -1
 
@@ -94,13 +89,13 @@ export class LinkedList {
 	}
 
 	// Adds the element at specified index
-	addAt<T extends unknown>(index: number, element: T) {
+	addAt(index: number, element: T) {
 		if (!this.head) return false
 		index--
 		const node = new Node<T>(element)
 
 		let currentNode = this.head
-		let previousNode: Node
+		let previousNode: Node<T>
 		let currentIndex = 0
 
 		// Check if index is out of bounds of list
@@ -134,7 +129,7 @@ export class LinkedList {
 		if (this.head === null) return null
 		index--
 		let currentNode = this.head
-		let previousNode: Node
+		let previousNode: Node<T>
 		let currentIndex = 0
 
 		// Check if index is present in list
@@ -165,6 +160,7 @@ export class LinkedList {
 		if (this.head === null) return null
 		let currentNode = this.head
 		let count = 0
+
 		while (count < this.length) {
 			count++
 			console.log(currentNode.element)
@@ -175,8 +171,8 @@ export class LinkedList {
 
 // class node (constructor)
 // Creating Node with element's value
-class Node<T = unknown> {
-	next: Node | null
+class Node<T extends unknown> {
+	next: Node<T> | null
 
 	constructor(public element: T) {
 		// this.element = element
@@ -184,6 +180,7 @@ class Node<T = unknown> {
 	}
 }
 
+// TODO Implement this test file:
 // Returns the head
 // LinkedList.prototype.head = function () {
 // 	return this.head
